@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Edit Note</title>
+</head>
+<body>
+  <h1>Edit Note</h1>
+  <form action="/edit/<%= noteFileName %>" method="POST">
+    <textarea name="note" rows="10" cols="50"><%= noteContent %></textarea>
+    <br>
+    <button type="submit">Update Note</button>
+  </form>
+  <br>
+  <a href="/">Go Back</a>
+</body>
+</html>
