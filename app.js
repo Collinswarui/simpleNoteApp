@@ -16,7 +16,7 @@ app.use(express.static('public'));
 
 
 // check if a directory exists if it does not create one
-const directoryPath = 'notes3';
+const directoryPath = 'notes';
 fs.stat(directoryPath, (err, stats) => {
   if (err) {
     if (err.code === 'ENOENT') {
@@ -56,7 +56,11 @@ app.get('/', (req, res) =>{
             const notes = files.map(file => {
                 const filePath = path.join(notesDir, file);
                 const note = fs.readFileSync(filePath, 'utf8');
-                return { fileName: file, content: note};
+                const createdAt = new Date(parseInt(file.split('-')[0])).toLocaleString();
+                return { fileName: file, 
+                         content: note,
+                         createdAt: createdAt
+                        };
             });
             res.render('index', {notes});
         }
@@ -71,10 +75,25 @@ app.post('/add', (req, res) => {
         return;
     }
 
-    const timestamp = Date.now();
-    const fileName = `${timestamp}-${title}.txt`
-    //const folderName = path.join(__dirname, 'notes2');
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0O');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hour = String(now.getHours()).padStart(2, '0');
+    const minute = String(now.getMinutes()).padStart(2, '0');
+    const second = String(now.getSeconds()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+
+    const fileName = `${title} ${formattedDate}`;
     const filePath = path.join(__dirname, 'notes', fileName);
+    
+
+    const noteData = {
+      fileName: fileName,
+      content: note,
+      createdAt: formattedDate
+    };
+    //const folderName = path.join(__dirname, 'notes2');
 
     fs.writeFile(filePath, note, (err) => {
         if (err) {
@@ -95,7 +114,9 @@ app.get('/edit/:noteFileName', (req, res) => {
   
     fs.readFile(filePath, 'utf8', (err, data) => {
       if (err) {
-        console.error(err);
+        console.error(`Error reading note: ${err}`);
+        console.error(`File path: ${filePath}`);
+
         res.status(500).send('Error reading note');
       } else {
         res.render('edit', { noteFileName, noteContent: data });
